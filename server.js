@@ -1,10 +1,6 @@
 const express = require("express");
 const app = express();
 
-// app.listen(3000, () => {
-//     console.log("El servidor está inicializado en el puerto 3000");
-//    });
-
 //require our websocket library 
 var WebSocketServer = require('ws').Server; 
 
@@ -21,16 +17,7 @@ wss.broadcast = function(data, sender) {
 //all connected to the server users 
 var users = {};
 var jobId =0;
-wss.on('request', function (request) {
-   const query = request.resourceURL.query;
-   if (query.delay) {
-    setTimeout(() => request.accept(), query.delay);
-   } else if (query.reject) {
-    request.reject();
-   } else {
-    request.accept();
-   }
-  });
+
 //when a user connects to our sever 
 wss.on('connection', function connection(connection, request) {
   
