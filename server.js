@@ -20,17 +20,30 @@ wss.broadcast = function(data, sender) {
   }
 //all connected to the server users 
 var users = {};
-
+var jobId =0;
+wss.on('request', function (request) {
+   const query = request.resourceURL.query;
+   if (query.delay) {
+    setTimeout(() => request.accept(), query.delay);
+   } else if (query.reject) {
+    request.reject();
+   } else {
+    request.accept();
+   }
+  });
 //when a user connects to our sever 
-wss.on('connection', function(connection) {
+wss.on('connection', function connection(connection, request) {
   
    console.log("User connected");
-	
+	const current_url = new URL('http://cmt.com'+request.url);
+   const search_params = current_url.searchParams;
+   jobId = search_params.get('jobId');
+   jobId = search_params.get('userName');
+
    //when server gets a message from a connected user 
    connection.on('message', function(message) { 
 	
       var data;
-		
       //accepting only JSON messages 
       try { 
          data = JSON.parse(message); 
@@ -61,7 +74,7 @@ wss.on('connection', function(connection) {
                   success: true,
                   usersList: users
                }); 
-               wss.broadcast(JSON.stringify(users), wss);
+               // wss.broadcast(JSON.stringify(users), wss);
             } 
 				
             break;
