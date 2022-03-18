@@ -1,36 +1,34 @@
-const express = require("express");
-const app = express();
-
 //require our websocket library 
 var WebSocketServer = require('ws').Server; 
 
 //creating a websocket server at port 9090 
 var wss = new WebSocketServer({port: 3001}); 
 
-wss.broadcast = function(data, sender) {
-    wss.clients.forEach(function(client) {
-      if (client !== sender) {
-        client.send(data);
-      }
-    })
-  }
 //all connected to the server users 
 var users = {};
-var jobId =0;
+var usersName = {};
+
+wss.broadcast = function(sender) {
+   wss.clients.forEach(function(client) {
+     if (client !== sender) {
+      sendTo(client, { 
+         type: "newConnection", 
+         users: usersName
+      });
+     }
+   })
+ }
 
 //when a user connects to our sever 
-wss.on('connection', function connection(connection, request) {
+wss.on('connection', function(connection) {
   
    console.log("User connected");
-	const current_url = new URL('http://cmt.com'+request.url);
-   const search_params = current_url.searchParams;
-   jobId = search_params.get('jobId');
-   jobId = search_params.get('userName');
-
+	
    //when server gets a message from a connected user 
    connection.on('message', function(message) { 
 	
       var data;
+		
       //accepting only JSON messages 
       try { 
          data = JSON.parse(message); 
@@ -51,17 +49,21 @@ wss.on('connection', function connection(connection, request) {
                   type: "login", 
                   success: false 
                }); 
+               
             } else { 
                //save user connection on the server 
                users[data.name] = connection; 
                connection.name = data.name;
-				console.log(connection);	
+
+               usersName[data.name] = data.name;
+					
                sendTo(connection, { 
                   type: "login", 
                   success: true,
-                  usersList: users
+                  users: usersName
                }); 
-               // wss.broadcast(JSON.stringify(users), wss);
+
+               wss.broadcast(wss)
             } 
 				
             break;
@@ -165,11 +167,3 @@ wss.on('connection', function connection(connection, request) {
 function sendTo(connection, message) { 
    connection.send(JSON.stringify(message)); 
 }
-
-function retrieveUsersList() {
-    
-}
-
-app.get('/users', function (req, res) {
-    res.send(users);
-  });

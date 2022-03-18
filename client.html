@@ -48,7 +48,10 @@
    var name;
    var connectedUser;
    //connecting to our signaling server
-   var conn = new WebSocket('ws:///af85-187-189-234-141.ngrok/?jobId=123');
+   //var conn = new WebSocket('ws:///af85-187-189-234-141.ngrok/?jobId=123');
+   
+   var conn = new WebSocket('ws://36a3-187-190-13-110.ngrok.io/?jobId=123&userName=Luis');
+   
    conn.onopen = function () {
      console.log("Connected to the signaling server");
    };
@@ -193,7 +196,8 @@
         yourConn.setLocalDescription(answer);
         send({
            type: "answer",
-           answer: answer
+           answer: answer,
+           name: connectedUser
         });
      }, function (error) {
         alert("Error when creating an answer");
